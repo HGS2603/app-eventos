@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>App Eventos</title>
+  <title>App HGS Data Solution + PCN </title>
   <style>
     :root{
       --bg:#0b1220; --card:#121b2e; --text:#e5e7eb; --muted:#94a3b8;
@@ -73,7 +73,7 @@
   <div class="topbar">
     <div class="brand">
       <h1>App Eventos</h1>
-      <small>Captura operativa + Google Sheets</small>
+      <small>Captura Produccion Impresion</small>
     </div>
     <div class="right">
       <div id="userBadge" class="userbadge hide">Usuario: <b id="userName"></b></div>
@@ -107,7 +107,7 @@
       <div id="msgLogin" class="banner"></div>
 
       <div class="hint">
-        Backend: <b>BASE_URL</b> debe terminar en <b>/exec</b>.
+        HGS <b> DATA SOLUTION </b> h_garay@live.com.mx <b>/exec</b>.
       </div>
     </section>
 
@@ -166,7 +166,7 @@
           <label>Estatus de máquina</label>
           <select id="estatus"></select>
           <div class="hint">
-            Producción + Merma se muestran con <b>estatus_id = 1 o 2</b>. Causa se muestra con <b>estatus_id = 3</b>.
+            Producción + Merma se muestran con <b>estatus en Produccio o Cambio</b>. Causa se muestra con <b>estatus Paro</b>.
           </div>
         </div>
 
@@ -180,12 +180,12 @@
       <!-- Producción y Merma (solo estatus_id=1 o 2) -->
       <div class="row two">
         <div id="cajaProduccion" class="hide">
-          <label>Producción (entero)</label>
-          <input id="produccion" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 1200"/>
+          <label>Producción (Kilos)</label>
+          <input id="produccion" inputmode="numeric" step="00.01"" placeholder="Ej. 500.00"/>
         </div>
         <div id="cajaMerma" class="hide">
-          <label>Merma de cambio (decimal)</label>
-          <input id="mermaCambio" type="number" step="0.01" placeholder="0.00"/>
+          <label>Merma (Kilos)</label>
+          <input id="mermaCambio" type="number" step="00.01" placeholder="10.00"/>
         </div>
       </div>
 
@@ -197,7 +197,7 @@
       <div id="msgForm" class="banner"></div>
 
       <div class="hint">
-        Guardado incluye: <b>id incremental</b> + <b>captured_at</b> + metadata del dispositivo.
+        Guardado incluye: </b>  metadata del dispositivo.
       </div>
     </section>
   </div>
@@ -721,3 +721,4 @@ function wire() {
 </script>
 </body>
 </html>
+
