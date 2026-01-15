@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>App HGS Data Solution + PCN </title>
+  <title>HGS Data Solution + PCN</title>
   <style>
     :root{
       --bg:#0b1220; --card:#121b2e; --text:#e5e7eb; --muted:#94a3b8;
@@ -72,8 +72,8 @@
 <div class="wrap">
   <div class="topbar">
     <div class="brand">
-      <h1>App HGS Data Solution + PCN</h1>
-      <small>Acceso al sistema</small>
+      <h1>HGS Data Solution + PCN</h1>
+      <small>Captura Operativa</small>
     </div>
     <div class="right">
       <div id="userBadge" class="userbadge hide">Usuario: <b id="userName"></b></div>
@@ -240,7 +240,7 @@ function clearBanner(id) {
 }
 
 function setEnv(ok) {
-  $("envPill").textContent = ok ? "ON Line" : "OFF Line";
+  $("envPill").textContent = ok ? "En Linea" : "Desconectado";
   $("envPill").style.borderColor = ok ? "rgba(34,197,94,.45)" : "rgba(239,68,68,.45)";
 }
 
@@ -721,5 +721,6 @@ function wire() {
 </script>
 </body>
 </html>
+
 
 
