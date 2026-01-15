@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>App Eventos</title>
+  <style>
+    :root{
+      --bg:#0b1220; --card:#121b2e; --text:#e5e7eb; --muted:#94a3b8;
+      --accent:#60a5fa; --ok:#22c55e; --bad:#ef4444; --border:rgba(148,163,184,.25);
+    }
+    *{box-sizing:border-box;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;}
+    body{margin:0;background:linear-gradient(135deg,#0b1220,#0b1630);color:var(--text);}
+    .wrap{max-width:980px;margin:0 auto;padding:18px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+    .brand h1{font-size:18px;margin:0;}
+    .brand small{color:var(--muted)}
+    .pill{font-size:12px;color:var(--muted);border:1px solid var(--border);padding:6px 10px;border-radius:999px;}
+    .grid{display:grid;gap:14px;}
+    @media(min-width:860px){ .grid{grid-template-columns:1fr 1fr;} }
+    .card{
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.01));
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.25);
+    }
+    .card h2{margin:0 0 10px 0;font-size:16px;}
+    .row{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px;}
+    @media(min-width:560px){ .row.two{grid-template-columns:1fr 1fr;} }
+    label{display:block;font-size:12px;color:var(--muted);margin:2px 0 6px;}
+    input, select{
+      width:100%;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(15,23,42,.7);
+      color:var(--text);
+      outline:none;
+    }
+    input:focus, select:focus{border-color:rgba(96,165,250,.7);box-shadow:0 0 0 3px rgba(96,165,250,.15);}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+    button{
+      border:0;border-radius:12px;padding:10px 14px;background:rgba(96,165,250,.9);
+      color:#06101f;font-weight:800;cursor:pointer;
+    }
+    button.secondary{background:transparent;color:var(--text);border:1px solid var(--border);font-weight:700;}
+    button:disabled{opacity:.45;cursor:not-allowed;}
+    .hint{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.4;}
+    .divider{height:1px;background:var(--border);margin:12px 0;}
+    .hide{display:none !important;}
+    .right{display:flex;align-items:center;gap:10px;}
+    .userbadge{font-size:12px;color:var(--muted)}
+    .banner{
+      margin-top:12px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background:rgba(2,6,23,.55);
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.35;
+      display:none;
+    }
+    .banner.show{display:block;}
+    .banner.ok{border-color:rgba(34,197,94,.45); color:rgba(209,250,229,.95);}
+    .banner.bad{border-color:rgba(239,68,68,.45); color:rgba(254,226,226,.95);}
+    .kpi{font-size:12px;color:var(--muted);margin-top:6px;}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">
+      <h1>App Eventos</h1>
+      <small>Captura operativa + Google Sheets</small>
+    </div>
+    <div class="right">
+      <div id="userBadge" class="userbadge hide">Usuario: <b id="userName"></b></div>
+      <div class="pill" id="envPill">Conectando…</div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LOGIN -->
+    <section class="card" id="loginCard">
+      <h2>Login</h2>
+
+      <div class="row">
+        <div>
+          <label>Usuario</label>
+          <select id="loginUsuario">
+            <option value="">Cargando usuarios…</option>
+          </select>
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnLogin">Entrar</button>
+        <button class="secondary" id="btnReload">Recargar catálogos</button>
+      </div>
+
+      <div id="msgLogin" class="banner"></div>
+
+      <div class="hint">
+        Backend: <b>BASE_URL</b> debe terminar en <b>/exec</b>.
+      </div>
+    </section>
+
+    <!-- FORM -->
+    <section class="card hide" id="formCard">
+      <h2>Registro de evento</h2>
+
+      <div class="row two">
+        <div>
+          <label>Fecha del evento</label>
+          <input id="fechaEvento" type="date"/>
+        </div>
+        <div>
+          <label>Hora del evento (24h)</label>
+          <input id="horaEvento" type="time"/>
+        </div>
+      </div>
+
+      <div class="kpi" id="turnoAutoInfo"></div>
+
+      <div class="divider"></div>
+
+      <div class="row two">
+        <div>
+          <label>Turno</label>
+          <select id="turno"></select>
+          <div class="hint">Se autoselecciona según la hora del evento (puedes ajustar si fuera necesario).</div>
+        </div>
+        <div>
+          <label>Supervisor</label>
+          <select id="supervisor"></select>
+        </div>
+      </div>
+
+      <div class="row two">
+        <div>
+          <label>Máquina</label>
+          <select id="maquina"></select>
+        </div>
+        <div>
+          <label>Operador</label>
+          <select id="operador"></select>
+        </div>
+      </div>
+
+      <!-- OT (entero) -->
+      <div class="row">
+        <div>
+          <label>Orden de trabajo (entero)</label>
+          <input id="ordenTrabajo" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 123456"/>
+        </div>
+      </div>
+
+      <div class="row two">
+        <div>
+          <label>Estatus de máquina</label>
+          <select id="estatus"></select>
+          <div class="hint">
+            Producción + Merma se muestran con <b>estatus_id = 1 o 2</b>. Causa se muestra con <b>estatus_id = 3</b>.
+          </div>
+        </div>
+
+        <!-- CAUSA (solo estatus_id=3) -->
+        <div id="cajaCausa" class="hide">
+          <label>Causa</label>
+          <select id="causa"></select>
+        </div>
+      </div>
+
+      <!-- Producción y Merma (solo estatus_id=1 o 2) -->
+      <div class="row two">
+        <div id="cajaProduccion" class="hide">
+          <label>Producción (entero)</label>
+          <input id="produccion" inputmode="numeric" pattern="[0-9]*" placeholder="Ej. 1200"/>
+        </div>
+        <div id="cajaMerma" class="hide">
+          <label>Merma de cambio (decimal)</label>
+          <input id="mermaCambio" type="number" step="0.01" placeholder="0.00"/>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btnGuardar" disabled>Guardar</button>
+        <button class="secondary" id="btnSalir">Salir</button>
+      </div>
+
+      <div id="msgForm" class="banner"></div>
+
+      <div class="hint">
+        Guardado incluye: <b>id incremental</b> + <b>captured_at</b> + metadata del dispositivo.
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+/** =========================
+ * CONFIG
+ * ========================= */
+const BASE_URL = "https://script.google.com/macros/s/AKfycbzOqZLStmOaNT97qkFaG1cEGNaVVCKi0rp_zW_fIwGDQoIetEgEsteYvs8Ajsn5kBY/exec"; // <-- CAMBIA ESTO (nueva implementación /exec)
+
+/** =========================
+ * STATE
+ * ========================= */
+let usuarioActivo = "";
+let catalogos = {
+  Turnos: [],
+  Supervisores: [],
+  Maquinas: [],
+  Operadores: [],
+  Estatus: [],
+  Causas: []
+};
+
+/** =========================
+ * HELPERS
+ * ========================= */
+const $ = (id) => document.getElementById(id);
+
+function setBanner(id, type, text) {
+  const el = $(id);
+  el.className = "banner show " + (type === "ok" ? "ok" : "bad");
+  el.textContent = text;
+}
+
+function clearBanner(id) {
+  const el = $(id);
+  el.className = "banner";
+  el.textContent = "";
+}
+
+function setEnv(ok) {
+  $("envPill").textContent = ok ? "API conectada" : "Sin conexión";
+  $("envPill").style.borderColor = ok ? "rgba(34,197,94,.45)" : "rgba(239,68,68,.45)";
+}
+
+function setLoading(btn, loading, textLoading="Procesando…") {
+  btn.disabled = loading;
+  btn.textContent = loading ? textLoading : btn.dataset.label;
+}
+
+function escapeHtml(str) {
+  return String(str)
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;")
+    .replaceAll("'","&#039;");
+}
+
+async function apiGet(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+async function apiPost(payload) {
+  const res = await fetch(BASE_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function fillSelectWithNombre(selectId, items, placeholder="Selecciona…") {
+  const sel = $(selectId);
+  sel.innerHTML = "";
+  // value = nombre (por requerimiento: guardar texto)
+  sel.innerHTML =
+    `<option value="">${placeholder}</option>` +
+    items.map(x => `<option value="${escapeHtml(String(x.nombre))}">${escapeHtml(String(x.nombre))}</option>`).join("");
+}
+
+function getSelectedText(selectId) {
+  const sel = $(selectId);
+  return sel.value; // value ya es el nombre
+}
+
+function toIntStrict(s) {
+  if (!/^\d+$/.test(String(s).trim())) return null;
+  return Number(s);
+}
+
+function toDecStrict(s) {
+  const t = String(s).trim();
+  if (!/^\d+(\.\d+)?$/.test(t)) return null;
+  return Number(t);
+}
+
+function nowLocalParts() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,"0");
+  const dd = String(d.getDate()).padStart(2,"0");
+  const hh = String(d.getHours()).padStart(2,"0");
+  const mi = String(d.getMinutes()).padStart(2,"0");
+  return { date:`${yyyy}-${mm}-${dd}`, time:`${hh}:${mi}`, d };
+}
+
+function isFutureEvent(fechaISO, horaHHMM) {
+  if (!fechaISO || !horaHHMM) return false;
+  const dt = new Date(`${fechaISO}T${horaHHMM}:00`);
+  return dt.getTime() > Date.now();
+}
+
+/** =========================
+ * TURNOS AUTO
+ * ========================= */
+function getTurnoByHora(hhmm) {
+  // 7:00 - 14:59 = Dia
+  // 15:00 - 22:29 = Tarde
+  // 22:30 - 23:59 y 00:00 - 06:59 = Noche
+  if (!hhmm) return "";
+  const [hh, mm] = hhmm.split(":").map(Number);
+  const mins = hh*60 + mm;
+
+  const DIA_START = 7*60;          // 420
+  const DIA_END = 14*60 + 59;      // 899
+  const TARDE_START = 15*60;       // 900
+  const TARDE_END = 22*60 + 29;    // 1349
+  const NOCHE_START = 22*60 + 30;  // 1350
+  const NOCHE_END = 23*60 + 59;    // 1439
+  const MADRUGADA_END = 6*60 + 59; // 419
+
+  if (mins >= DIA_START && mins <= DIA_END) return "Dia";
+  if (mins >= TARDE_START && mins <= TARDE_END) return "Tarde";
+  if (mins >= NOCHE_START && mins <= NOCHE_END) return "Noche";
+  if (mins >= 0 && mins <= MADRUGADA_END) return "Noche";
+  return "";
+}
+
+function autoSelectTurnoByHora() {
+  const hora = $("horaEvento").value;
+  const turnoNombre = getTurnoByHora(hora);
+  const info = $("turnoAutoInfo");
+
+  if (!hora) {
+    info.textContent = "";
+    return;
+  }
+
+  if (!turnoNombre) {
+    info.textContent = "No se pudo determinar turno por la hora.";
+    return;
+  }
+
+  // Seleccionar si existe en catálogo
+  const sel = $("turno");
+  const option = Array.from(sel.options).find(o => o.value === turnoNombre);
+  if (option) {
+    sel.value = turnoNombre;
+    info.textContent = `Turno sugerido por hora (${hora}): ${turnoNombre}`;
+  } else {
+    info.textContent = `Turno sugerido por hora (${hora}): ${turnoNombre} (no existe en catálogo)`;
+  }
+}
+
+/** =========================
+ * UI CONDICIONAL POR ESTATUS_ID
+ * ========================= */
+function getEstatusIdFromSelect() {
+  // Estatus select guarda NOMBRE, pero necesitamos id para la lógica.
+  const nombre = $("estatus").value;
+  const item = (catalogos.Estatus || []).find(x => String(x.nombre) === String(nombre));
+  return item ? Number(item.id) : NaN;
+}
+
+function applyConditionalUI() {
+  const estatusId = getEstatusIdFromSelect();
+
+  const showProdMerma = (estatusId === 1 || estatusId === 2);
+  const showCausa = (estatusId === 3);
+
+  $("cajaProduccion").classList.toggle("hide", !showProdMerma);
+  $("cajaMerma").classList.toggle("hide", !showProdMerma);
+  $("cajaCausa").classList.toggle("hide", !showCausa);
+
+  if (!showProdMerma) {
+    $("produccion").value = "";
+    $("mermaCambio").value = "";
+  }
+  if (!showCausa) {
+    $("causa").value = "";
+  }
+
+  validateFormAndToggleSave();
+}
+
+/** =========================
+ * VALIDACIÓN Y BOTÓN
+ * ========================= */
+function validateFormAndToggleSave() {
+  if (!usuarioActivo) {
+    $("btnGuardar").disabled = true;
+    return;
+  }
+
+  clearBanner("msgForm");
+
+  const fecha = $("fechaEvento").value;
+  const hora = $("horaEvento").value;
+
+  const turno = getSelectedText("turno");
+  const supervisor = getSelectedText("supervisor");
+  const maquina = getSelectedText("maquina");
+  const operador = getSelectedText("operador");
+  const estatusNombre = getSelectedText("estatus");
+
+  const ot = $("ordenTrabajo").value.trim();
+
+  // requeridos base
+  const missingBase =
+    !fecha || !hora || !turno || !supervisor || !maquina || !operador || !estatusNombre || !ot;
+
+  // fecha/hora no futuro
+  const future = isFutureEvent(fecha, hora);
+
+  const estatusId = getEstatusIdFromSelect();
+  const showProdMerma = (estatusId === 1 || estatusId === 2);
+  const showCausa = (estatusId === 3);
+
+  // requeridos condicionales
+  let missingCond = false;
+
+  if (showProdMerma) {
+    const prodOk = toIntStrict($("produccion").value.trim()) !== null;
+    const mermaOk = toDecStrict($("mermaCambio").value.trim()) !== null;
+    if (!prodOk || !mermaOk) missingCond = true;
+  }
+
+  if (showCausa) {
+    if (!$("causa").value) missingCond = true;
+  }
+
+  // OT entero
+  const otOk = toIntStrict(ot) !== null;
+
+  const ok = !missingBase && !missingCond && !future && otOk && !Number.isNaN(estatusId);
+
+  $("btnGuardar").disabled = !ok;
+
+  if (future) {
+    setBanner("msgForm", "bad", "La fecha/hora del evento no puede ser futura.");
+  } else if (!otOk && ot) {
+    setBanner("msgForm", "bad", "Orden de trabajo debe ser entero (solo números).");
+  }
+
+  return ok;
+}
+
+/** =========================
+ * LOAD DATA
+ * ========================= */
+async function loadUsuarios() {
+  const usuarios = await apiGet(`${BASE_URL}?action=usuarios`);
+  const sel = $("loginUsuario");
+  sel.innerHTML = "";
+  if (!Array.isArray(usuarios) || usuarios.length === 0) {
+    sel.innerHTML = `<option value="">(Sin usuarios activos)</option>`;
+    return;
+  }
+  sel.innerHTML = `<option value="">Selecciona…</option>` + usuarios.map(u =>
+    `<option value="${escapeHtml(u)}">${escapeHtml(u)}</option>`
+  ).join("");
+}
+
+async function loadCatalogo(nombre) {
+  return apiGet(`${BASE_URL}?action=catalogo&nombre=${encodeURIComponent(nombre)}`);
+}
+
+async function loadAll() {
+  try {
+    setEnv(false);
+    clearBanner("msgLogin");
+    clearBanner("msgForm");
+
+    await loadUsuarios();
+
+    const [Turnos, Supervisores, Maquinas, Operadores, Estatus, Causas] = await Promise.all([
+      loadCatalogo("Turnos"),
+      loadCatalogo("Supervisores"),
+      loadCatalogo("Maquinas"),
+      loadCatalogo("Operadores"),
+      loadCatalogo("Estatus"),
+      loadCatalogo("Causas"),
+    ]);
+
+    catalogos = { Turnos, Supervisores, Maquinas, Operadores, Estatus, Causas };
+
+    // value = nombre (guardar texto)
+    fillSelectWithNombre("turno", Turnos);
+    fillSelectWithNombre("supervisor", Supervisores);
+    fillSelectWithNombre("maquina", Maquinas);
+    fillSelectWithNombre("operador", Operadores);
+    fillSelectWithNombre("estatus", Estatus);
+    fillSelectWithNombre("causa", Causas);
+
+    setEnv(true);
+    setBanner("msgLogin","ok","Catálogos cargados correctamente.");
+  } catch (err) {
+    setEnv(false);
+    console.error(err);
+    setBanner("msgLogin","bad",`Error al cargar: ${String(err.message || err)}`);
+  }
+}
+
+/** =========================
+ * FLOW
+ * ========================= */
+function showApp(isLogged) {
+  $("loginCard").classList.toggle("hide", isLogged);
+  $("formCard").classList.toggle("hide", !isLogged);
+  $("userBadge").classList.toggle("hide", !isLogged);
+
+  if (isLogged) {
+    $("userName").textContent = usuarioActivo;
+    clearBanner("msgForm");
+    setDefaultDateTimeWithMax();
+    autoSelectTurnoByHora();
+    applyConditionalUI();
+  } else {
+    $("userName").textContent = "";
+  }
+}
+
+function setDefaultDateTimeWithMax() {
+  const { date, time, d } = nowLocalParts();
+  $("fechaEvento").value = date;
+  $("horaEvento").value = time;
+
+  // Restringir futuro: max date = hoy
+  $("fechaEvento").max = date;
+
+  // max time: si fecha = hoy, limitar a hora actual
+  $("horaEvento").max = time;
+}
+
+function refreshTimeMaxIfToday() {
+  const { date, time } = nowLocalParts();
+  $("fechaEvento").max = date;
+
+  if ($("fechaEvento").value === date) {
+    $("horaEvento").max = time;
+  } else {
+    $("horaEvento").removeAttribute("max");
+  }
+}
+
+/** =========================
+ * ACTIONS
+ * ========================= */
+async function onLogin() {
+  const btn = $("btnLogin");
+  try {
+    clearBanner("msgLogin");
+    const usuario = $("loginUsuario").value.trim();
+    const password = $("loginPassword").value;
+
+    if (!usuario) return setBanner("msgLogin","bad","Selecciona un usuario.");
+    if (!password) return setBanner("msgLogin","bad","Escribe la contraseña.");
+
+    setLoading(btn, true, "Validando…");
+
+    const resp = await apiPost({ action: "login", usuario, password });
+
+    if (resp && resp.ok) {
+      usuarioActivo = usuario;
+      $("loginPassword").value = "";
+      setBanner("msgLogin","ok",`Acceso correcto. Bienvenido: ${usuarioActivo}`);
+      showApp(true);
+    } else {
+      setBanner("msgLogin","bad","Acceso denegado: usuario/password incorrectos o usuario inactivo.");
+    }
+  } catch (err) {
+    setBanner("msgLogin","bad",`Error: ${String(err.message || err)}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+function limpiarDespuesDeGuardar() {
+  // Limpieza completa pero mantiene defaults y autoselección de turno por hora
+  setDefaultDateTimeWithMax();
+  $("supervisor").value = "";
+  $("maquina").value = "";
+  $("operador").value = "";
+  $("ordenTrabajo").value = "";
+  $("estatus").value = "";
+  $("causa").value = "";
+  $("produccion").value = "";
+  $("mermaCambio").value = "";
+  $("turno").value = ""; // se autoselecciona por hora
+  autoSelectTurnoByHora();
+  applyConditionalUI();
+  validateFormAndToggleSave();
+}
+
+async function onGuardar() {
+  const btn = $("btnGuardar");
+  try {
+    clearBanner("msgForm");
+
+    // Validación final (por seguridad)
+    const ok = validateFormAndToggleSave();
+    if (!ok) {
+      return setBanner("msgForm","bad","Faltan datos obligatorios o hay datos inválidos.");
+    }
+
+    // Validación extra de futuro
+    if (isFutureEvent($("fechaEvento").value, $("horaEvento").value)) {
+      $("btnGuardar").disabled = true;
+      return setBanner("msgForm","bad","La fecha/hora del evento no puede ser futura.");
+    }
+
+    setLoading(btn, true, "Guardando…");
+
+    const estatusNombre = getSelectedText("estatus");
+    const estatusId = getEstatusIdFromSelect();
+
+    const payload = {
+      action: "guardar",
+      usuario: usuarioActivo,
+
+      // evento
+      fecha_evento: $("fechaEvento").value,
+      hora_evento: $("horaEvento").value,
+
+      // combos (TEXTO)
+      turno: getSelectedText("turno"),
+      supervisor: getSelectedText("supervisor"),
+      maquina: getSelectedText("maquina"),
+      operador: getSelectedText("operador"),
+      estatus: estatusNombre,
+
+      // OT entero
+      orden_trabajo: toIntStrict($("ordenTrabajo").value.trim()),
+
+      // condicionales
+      causa: (estatusId === 3) ? getSelectedText("causa") : "",
+      produccion: (estatusId === 1 || estatusId === 2) ? toIntStrict($("produccion").value.trim()) : "",
+      merma_cambio: (estatusId === 1 || estatusId === 2) ? toDecStrict($("mermaCambio").value.trim()) : "",
+
+      // metadata
+      user_agent: navigator.userAgent,
+      platform: navigator.platform,
+      language: navigator.language
+    };
+
+    const resp = await apiPost(payload);
+
+    if (resp && resp.ok) {
+      setBanner("msgForm","ok",`Guardado OK. ID: ${resp.id}. El formulario se limpió automáticamente.`);
+      limpiarDespuesDeGuardar();
+    } else {
+      setBanner("msgForm","bad",`No guardado: ${JSON.stringify(resp)}`);
+    }
+  } catch (err) {
+    setBanner("msgForm","bad",`Error al guardar: ${String(err.message || err)}`);
+  } finally {
+    setLoading(btn, false);
+  }
+}
+
+/** =========================
+ * INIT
+ * ========================= */
+function wire() {
+  $("btnLogin").dataset.label = $("btnLogin").textContent;
+  $("btnGuardar").dataset.label = $("btnGuardar").textContent;
+
+  $("btnLogin").addEventListener("click", onLogin);
+  $("btnReload").addEventListener("click", loadAll);
+  $("btnGuardar").addEventListener("click", onGuardar);
+
+  $("btnSalir").addEventListener("click", () => {
+    usuarioActivo = "";
+    clearBanner("msgForm");
+    showApp(false);
+  });
+
+  // Validaciones en tiempo real
+  ["fechaEvento","horaEvento","turno","supervisor","maquina","operador","ordenTrabajo","estatus","causa","produccion","mermaCambio"]
+    .forEach(id => $(id).addEventListener("input", validateFormAndToggleSave));
+
+  $("estatus").addEventListener("change", applyConditionalUI);
+
+  // Fecha/hora: no futuro
+  $("fechaEvento").addEventListener("change", () => {
+    refreshTimeMaxIfToday();
+    validateFormAndToggleSave();
+  });
+
+  $("horaEvento").addEventListener("change", () => {
+    autoSelectTurnoByHora();
+    validateFormAndToggleSave();
+  });
+
+  // Enter para login
+  $("loginPassword").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") onLogin();
+  });
+}
+
+(async function main(){
+  wire();
+  await loadAll();
+  showApp(false);
+})();
+</script>
+</body>
+</html>
