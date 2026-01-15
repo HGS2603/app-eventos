@@ -72,8 +72,8 @@
 <div class="wrap">
   <div class="topbar">
     <div class="brand">
-      <h1>App Eventos</h1>
-      <small>Captura Produccion Impresion</small>
+      <h1>App HGS Data Solution + PCN</h1>
+      <small>Acceso al sistema</small>
     </div>
     <div class="right">
       <div id="userBadge" class="userbadge hide">Usuario: <b id="userName"></b></div>
@@ -107,7 +107,7 @@
       <div id="msgLogin" class="banner"></div>
 
       <div class="hint">
-        HGS <b> DATA SOLUTION </b> h_garay@live.com.mx <b>/exec</b>.
+        HGS <b> DATA SOLUTION </b> h_garay@live.com.mx </b>.
       </div>
     </section>
 
@@ -185,7 +185,7 @@
         </div>
         <div id="cajaMerma" class="hide">
           <label>Merma (Kilos)</label>
-          <input id="mermaCambio" type="number" step="00.01" placeholder="10.00"/>
+          <input id="mermaCambio" type="number" step="00.01" placeholder="Ej. 10.00"/>
         </div>
       </div>
 
@@ -240,7 +240,7 @@ function clearBanner(id) {
 }
 
 function setEnv(ok) {
-  $("envPill").textContent = ok ? "API conectada" : "Sin conexión";
+  $("envPill").textContent = ok ? "ON Line" : "OFF Line";
   $("envPill").style.borderColor = ok ? "rgba(34,197,94,.45)" : "rgba(239,68,68,.45)";
 }
 
@@ -721,4 +721,5 @@ function wire() {
 </script>
 </body>
 </html>
+
 
