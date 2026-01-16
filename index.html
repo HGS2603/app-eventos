@@ -265,6 +265,17 @@ async function apiGet(url) {
 }
 
 async function apiPost(payload) {
+
+  async function apiGuardarGET(payload) {
+  const packed = encodeURIComponent(JSON.stringify(payload));
+  const url = `${BASE_URL}?action=guardar&payload=${packed}`;
+  const res = await fetch(url, { method: "GET" });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+
+  
   const res = await fetch(BASE_URL, {
     method: "POST",
     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -661,7 +672,7 @@ async function onGuardar() {
       language: navigator.language
     };
 
-    const resp = await apiPost(payload);
+    const resp = await apiGuardarGET(payload);
 
      // validacion Ultimo registro comparacion Fechas
     if (resp && resp.ok === false && resp.error === "EVENTO_NO_VALIDO") {
@@ -730,6 +741,7 @@ function wire() {
 </script>
 </body>
 </html>
+
 
 
 
