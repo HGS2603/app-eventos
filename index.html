@@ -674,10 +674,10 @@ async function onGuardar() {
     const resp = await apiGuardarGET(payload);
 
      // validacion Ultimo registro comparacion Fechas
-    if (resp && resp.ok === false && resp.error === "EVENTO_NO_VALIDO") {
-      setBanner("msgForm", "bad", resp.message);
-     return;
-   }
+    // if (resp && resp.ok === false && resp.error === "EVENTO_NO_VALIDO") {
+      // setBanner("msgForm", "bad", resp.message);
+    // return;
+   // }
 
     if (resp && resp.ok) {
       setBanner("msgForm","ok",`Guardado OK. ID: ${resp.id}. El formulario se limpió automáticamente.`);
@@ -740,6 +740,7 @@ function wire() {
 </script>
 </body>
 </html>
+
 
 
 
