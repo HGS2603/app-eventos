@@ -207,7 +207,7 @@
 /** =========================
  * CONFIG
  * ========================= */
-const BASE_URL = "https://script.google.com/macros/s/AKfycbzOqZLStmOaNT97qkFaG1cEGNaVVCKi0rp_zW_fIwGDQoIetEgEsteYvs8Ajsn5kBY/exec"; // <-- CAMBIA ESTO (nueva implementación /exec)
+const BASE_URL = "https://script.google.com/macros/s/AKfycbyj4KC9M-B73KEoiwNDesRb_jBf_1syO4Syn0DhGAK9-UeFXoFqkeq8YXhJsXgWXVAGSQ/exec"; // <-- CAMBIA ESTO (nueva implementación /exec)
 
 /** =========================
  * STATE
@@ -617,6 +617,9 @@ async function onGuardar() {
     if (!ok) {
       return setBanner("msgForm","bad","Faltan datos obligatorios o hay datos inválidos.");
     }
+    
+    
+    
 
     // Validación extra de futuro
     if (isFutureEvent($("fechaEvento").value, $("horaEvento").value)) {
@@ -659,6 +662,12 @@ async function onGuardar() {
     };
 
     const resp = await apiPost(payload);
+
+     // validacion Ultimo registro comparacion Fechas
+    if (resp && resp.ok === false && resp.error === "EVENTO_NO_VALIDO") {
+      setBanner("msgForm", "bad", resp.message);
+     return;
+   }
 
     if (resp && resp.ok) {
       setBanner("msgForm","ok",`Guardado OK. ID: ${resp.id}. El formulario se limpió automáticamente.`);
@@ -721,6 +730,7 @@ function wire() {
 </script>
 </body>
 </html>
+
 
 
 
