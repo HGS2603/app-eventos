@@ -264,15 +264,19 @@ async function apiGet(url) {
   return res.json();
 }
 
-async function apiPost(payload) {
 
-  async function apiGuardarGET(payload) {
+ async function apiGuardarGET(payload) {
   const packed = encodeURIComponent(JSON.stringify(payload));
   const url = `${BASE_URL}?action=guardar&payload=${packed}`;
   const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
+
+  
+async function apiPost(payload) {
+
+ 
 
 
   
@@ -741,6 +745,7 @@ function wire() {
 </script>
 </body>
 </html>
+
 
 
 
